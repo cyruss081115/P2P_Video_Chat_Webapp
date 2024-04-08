@@ -55,6 +55,7 @@ const VideoChat = () => {
         myPeer.current = new Peer();
         addVideoStream(myVideo.current, stream);
         myPeer.current.on("open", (id) => {
+          console.log("My peer id: ", id);
           socket.emit("join-room", roomId, id);
         });
         myPeer.current.on("call", (call) => {
@@ -78,7 +79,7 @@ const VideoChat = () => {
       console.log("User disconnected");
       if (peers[userId]) peers[userId].close();
     });
-  }, [peers, myPeer, myVideo, roomId, addVideoStream, connectToNewUser]);
+  }, []);
 
   return <div id="video-grid" ref={videoGrid}></div>;
 };
