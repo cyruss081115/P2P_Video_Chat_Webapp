@@ -10,7 +10,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' Component={RoomOperation} />
-          <Route path='/inRoom/:roomId' element={<ChatRoom />} />
+          <Route path='/inRoom/:roomId' Component={ChatRoom} />
         </Routes>
       </BrowserRouter>
     </div>

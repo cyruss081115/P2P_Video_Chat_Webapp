@@ -41,11 +41,29 @@ io.on('connection', (socket) => {
         io.emit('update-room', roomList);
     });
 
-    socket.on('join-room', (roomId) => {
+    socket.on('join-room', (roomId, userId) => {
+      console.log('join-room', roomId, userId);
       const targetRoom = roomList.find((room) => room.id === roomId);
-      if (targetRoom) {
+      console.log('targetRoom', targetRoom);
+      if (targetRoom){
         targetRoom.socketList.push(socket.id);
         socket.join(roomId);
+        io.to(roomId).emit('update-room', roomList);
+        // Broadcast to all clients in the room
+        socket.broadcast.to(roomId).emit('user-connected', userId);
+
+        socket.on('disconnect', () => {
+          targetRoom.socketList = targetRoom.socketList.filter((socketId) => socketId !== socket.id);
+          io.to(roomId).emit('update-room', roomList);
+          socket.broadcast.to(roomId).emit('user-disconnected',userId);
+        });
+      }
+    });
+
+    socket.on('remove-room', (roomId) => {
+      const targetRoomIndex = roomList.findIndex((room) => room.id === roomId);
+      if (targetRoomIndex !== -1){
+        roomList.splice(targetRoomIndex, 1);
         io.to(roomId).emit('update-room', roomList);
       }
     });
