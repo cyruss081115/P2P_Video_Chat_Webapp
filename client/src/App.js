@@ -2,6 +2,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RoomOperation from './pages/RoomOperation';
 import TemporaryPage from './pages/TemporaryPage';
+import ChatRoom from './pages/ChatRoom';
 
 function App() {
   return (
@@ -9,7 +10,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' Component={RoomOperation} />
-          <Route path='/inRoom' Component={TemporaryPage} />
+          <Route path='/inRoom/:roomId' element={<ChatRoom />} />
         </Routes>
       </BrowserRouter>
     </div>

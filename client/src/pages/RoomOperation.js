@@ -25,7 +25,7 @@ const RoomOperation = () => {
 
   const joinRoom = (roomId) => {
     socket.emit('join-room', roomId);
-    navigate('/inRoom')
+    navigate(`/inRoom/${roomId}`)
   };
 
   return (
@@ -42,7 +42,11 @@ const RoomOperation = () => {
               <Box border={1} padding={4} display="flex" flexDirection="column" justifyContent='center' alignItems="center">
                 Room ID: {room.id}
                 <div style={{ marginBottom: '20px' }}/>
-                <Button onClick={() => joinRoom(room.id)} variant="outlined" color="success" sx={{ width: 'fit-content', textTransform: 'lowercase' }}>
+                <Button
+                onClick={() => joinRoom(room.id)}
+                variant="outlined"
+                color="success"
+                sx={{ width: 'fit-content', textTransform: 'lowercase' }}>
                   Join Room
                 </Button>
               </Box>
