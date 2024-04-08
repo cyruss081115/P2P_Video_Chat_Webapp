@@ -1,37 +1,68 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const https = require('https');
+const port = 5000;
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
 
-const options = {
-    key: fs.readFileSync('certificates/key.pem'),
-    cert: fs.readFileSync('certificates/cert.pem')
-};
-const server = https.createServer(options, app);
-
-const io = require('socket.io')(server)
-const { v4: uuidV4 } = require('uuid')
-
-app.set('view engine', 'ejs')
-app.use(express.static('public'))
+app.use(cors());
 
 app.get('/', (req, res) => {
-  res.redirect(`/${uuidV4()}`)
-})
+  res.json({ message: 'Hello from the backend!' });
+});
 
-app.get('/:room', (req, res) => {
-  res.render('room', { roomId: req.params.room })
-})
+app.get('/get-audio-list', (req, res) => {
+  const uploadFolderPath = 'uploads';
 
-io.on('connection', socket => {
-  socket.on('join-room', (roomId, userId) => {
-    socket.join(roomId)
-    socket.broadcast.to(roomId).emit('user-connected', userId)
+  fs.readdir(uploadFolderPath, (err, files) => {
+    if (err) {
+      console.error('Error reading upload folder:', err);
+      res.status(500).json({ error: 'Failed to retrieve audio files' });
+      return;
+    }
 
-    socket.on('disconnect', () => {
-      socket.broadcast.to(roomId).emit('user-disconnected', userId)
-    })
-  })
-})
+    res.json({ audioFiles: files });
+  });
+});
 
-server.listen(3000)
+app.get('/uploads/:audioFile', (req, res) => {
+  const audioFile = req.params.audioFile;
+  const filePath = `uploads/${audioFile}`;
+
+  res.download(filePath, audioFile, (err) => {
+    if (err) {
+      console.error('Error downloading audio file:', err);
+      res.status(500).json({ error: 'Failed to download audio file' });
+    }
+  });
+});
+
+app.post('/upload-audio', upload.single('audio'), (req, res) => {
+  const uploadFolderPath = 'uploads';
+
+  fs.readdir(uploadFolderPath, (err, files) => {
+    if (err) {
+      console.error('Error reading upload folder:', err);
+      res.status(500).json({ error: 'Failed to save audio file' });
+      return;
+    }
+
+    const fileCount = files.length;
+    const newFileName = `${fileCount}.wav`; // Assuming the recorded file format is 'wav'
+
+    fs.rename(req.file.path, `${uploadFolderPath}/${newFileName}`, (err) => {
+      if (err) {
+        console.error('Error renaming audio file:', err);
+        res.status(500).json({ error: 'Failed to save audio file' });
+        return;
+      }
+
+      res.sendStatus(200);
+    });
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
