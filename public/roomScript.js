@@ -12,7 +12,11 @@ navigator.mediaDevices
     audio: true,
   })
   .then((stream) => {
-    myPeer = new Peer();
+    myPeer = new Peer(undefined, {
+      host: "/",
+      port: "3001",
+      secure: false
+    });
     // Add my video stream
     myVideo.srcObject = stream;
     myVideo.addEventListener("loadedmetadata", () => {
@@ -79,6 +83,15 @@ function startRecording(videoStream, filePrefix) {
     a.download = `${filePrefix}.webm`;
     a.click();
     URL.revokeObjectURL(url);
+
+    // Send the recorded video to all connected users
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = reader.result.split(",")[1];
+      console.log("sending recorded video");
+      socket.emit("send-recorded-video", base64data);
+    };
+    reader.readAsDataURL(blob);
   };
   mediaRecorder.start();
   return mediaRecorder;
@@ -141,3 +154,14 @@ startStopRecordingButton.onclick = () => {
   }
 };
 myVideoOperationsButtonContainer.appendChild(startStopRecordingButton);
+
+socket.on("send-recorded-video", (base64data) => {
+  console.log("received recorded video");
+  const blob = new Blob([base64data], { type: "video/webm" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filePrefix}.webm`;
+  a.click();
+  URL.revokeObjectURL(url);
+});

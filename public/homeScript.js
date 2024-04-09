@@ -7,7 +7,7 @@ const updateRoomDisplay = () => {
             const roomList = JSON.parse(xmlHttp.responseText);
             roomDisplayContainer.innerHTML = '';
             roomList.forEach(room => {
-                const roomDisplay = createRoomDisplay(room.roomId);
+                const roomDisplay = createRoomDisplay(room.roomId, room.users.length);
                 roomDisplayContainer.appendChild(roomDisplay);
             });
         }
@@ -40,14 +40,15 @@ removeRoom = (roomId) => {
 }
 
 // Create room display as card using bootstrap
-const createRoomDisplay = (roomId) => {
+const createRoomDisplay = (roomId, numParticipants) => {
     /**
      * Create a room display card using bootstrap styling
      * The DivElement has the following structure:
      * <div class="d-flex justify-content-center py-1">
      *  <div class="card py-3" style="width: 20rem;" id="room-${roomId}">
      *     <div class="card-body">
-     *        <p class="card-title text-center">Room ID: ${roomId}</p>
+     *       <p class="card-title text-center">Room ID: ${roomId}</p>
+     *       <p class="card-subtitle text-center">Participants: ${numParticipants}</p>
      *       <div class="d-flex justify-content-around">
      *         <button class="btn btn-primary">Join Room</button>
      *         <button class="btn btn-danger">Remove Room</button>
@@ -56,6 +57,7 @@ const createRoomDisplay = (roomId) => {
      *  </div>
      * </div>
      * @param {String} roomId - The room ID to display
+     * @param {Number} numParticipants - The number of participants in the room
      * @returns {HTMLDivElement} - The room display card
      */
     // Create room display wrapper for centering
@@ -73,6 +75,11 @@ const createRoomDisplay = (roomId) => {
     const roomDisplayTitle = document.createElement('p');
     roomDisplayTitle.className = "card-title text-center";
     roomDisplayTitle.innerText = `Room ID: ${roomId}`;
+    // Create room display subtitle
+    const roomDisplaySubtitle = document.createElement('p');
+    roomDisplaySubtitle.className = "card-subtitle text-center";
+    roomDisplaySubtitle.innerText = `Participants: ${numParticipants}`;
+
 
     // Create join room button
     const joinRoomButton = document.createElement('button');
@@ -91,8 +98,10 @@ const createRoomDisplay = (roomId) => {
     }
     // Append room display title to room display body
     roomDisplayBody.appendChild(roomDisplayTitle);
+    // Append room display subtitle to room display body
+    roomDisplayBody.appendChild(roomDisplaySubtitle);
     const roomDisplayButtons = document.createElement('div');
-    roomDisplayButtons.className = "d-flex justify-content-around";
+    roomDisplayButtons.className = "d-flex justify-content-around py-2";
     roomDisplayButtons.appendChild(joinRoomButton);
     roomDisplayButtons.appendChild(removeRoomButton);
     // Append room display buttons to room display body

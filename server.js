@@ -56,9 +56,11 @@ io.on('connection', socket => {
   socket.on('join-room', (roomId, userId) => {
     socket.join(roomId)
     socket.broadcast.to(roomId).emit('user-connected', userId)
+    roomManager.joinRoom(roomId, userId);
 
     socket.on('disconnect', () => {
       socket.broadcast.to(roomId).emit('user-disconnected', userId)
+      roomManager.leaveRoom(roomId, userId);
     })
   })
 })

@@ -22,6 +22,18 @@ class RoomManager {
     return this._roomList.findIndex((room) => room.roomId === roomId) !== -1;
   }
 
+  joinRoom(roomId, userId) {
+    const room = this._roomList.find((room) => room.roomId === roomId);
+    if (room === undefined) throw new Error(`Room ${roomId} not found`);
+    room.users.push(userId);
+  }
+
+  leaveRoom(roomId, userId) {
+    const room = this._roomList.find((room) => room.roomId === roomId);
+    if (room === undefined) throw new Error(`Room ${roomId} not found`);
+    room.users = room.users.filter((user) => user !== userId);
+  }
+
   getRoomList() {
     return this._roomList;
   }
