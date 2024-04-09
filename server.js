@@ -44,6 +44,11 @@ app.get('/', (req, res) => {
 })
 
 app.get('/:room', (req, res) => {
+  const roomId = req.params.room;
+  if (!roomManager.roomExists(roomId)) {
+    res.redirect('/');
+    return;
+  }
   res.render('room', { roomId: req.params.room })
 })
 

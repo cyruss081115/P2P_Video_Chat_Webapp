@@ -6,7 +6,6 @@ const myVideo = document.getElementById("my-video");
 myVideo.muted = true;
 let peers = {};
 
-
 navigator.mediaDevices
   .getUserMedia({
     video: true,
@@ -16,7 +15,7 @@ navigator.mediaDevices
     myPeer = new Peer();
     // Add my video stream
     myVideo.srcObject = stream;
-    myVideo.addEventListener('loadedmetadata', () => {
+    myVideo.addEventListener("loadedmetadata", () => {
       myVideo.play();
     });
 
@@ -66,8 +65,32 @@ function addVideoStream(video, stream) {
   videoGrid.append(video);
 }
 
+function startRecording(videoStream, filePrefix) {
+  const mediaRecorder = new MediaRecorder(videoStream);
+  const chunks = [];
+  mediaRecorder.ondataavailable = (event) => {
+    chunks.push(event.data);
+  };
+  mediaRecorder.onstop = (event) => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filePrefix}.webm`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  mediaRecorder.start();
+  return mediaRecorder;
+}
 
-const myVideoOperationsButtonContainer = document.getElementById("my-video-operation-buttons");
+function stopRecording(mediaRecorder) {
+  mediaRecorder.stop();
+}
+
+const myVideoOperationsButtonContainer = document.getElementById(
+  "my-video-operation-buttons"
+);
 
 // Mute/Unmute button
 const muteUnmuteButton = document.createElement("button");
@@ -78,7 +101,7 @@ muteUnmuteButton.onclick = () => {
   myVideo.srcObject.getAudioTracks()[0].enabled = !enabled;
   muteUnmuteButton.innerHTML = enabled ? "Unmute" : "Mute";
   muteUnmuteButton.className = enabled ? "btn btn-primary" : "btn btn-danger";
-}
+};
 myVideoOperationsButtonContainer.appendChild(muteUnmuteButton);
 
 // Play/Stop button
@@ -90,5 +113,31 @@ playStopButton.onclick = () => {
   myVideo.srcObject.getVideoTracks()[0].enabled = !enabled;
   playStopButton.innerHTML = enabled ? "Play" : "Stop";
   playStopButton.className = enabled ? "btn btn-primary" : "btn btn-danger";
-}
+};
 myVideoOperationsButtonContainer.appendChild(playStopButton);
+
+// Start/Stop recording button
+const startStopRecordingButton = document.createElement("button");
+startStopRecordingButton.className = "btn btn-primary";
+startStopRecordingButton.innerHTML = "Start Recording";
+let mediaRecorderList = [];
+startStopRecordingButton.onclick = () => {
+  if (startStopRecordingButton.innerHTML === "Start Recording") {
+    mediaRecorderList.push(startRecording(myVideo.srcObject, "my-video"));
+    let counter = 0;
+    for (let i = 0; i < videoGrid.childNodes.length; i++) {
+      const video = videoGrid.childNodes[i];
+      mediaRecorderList.push(
+        startRecording(video.srcObject, `user-${counter}`)
+      );
+      counter++;
+    }
+    startStopRecordingButton.innerHTML = "Stop Recording";
+    startStopRecordingButton.className = "btn btn-danger";
+  } else {
+    mediaRecorderList.forEach((mediaRecorder) => stopRecording(mediaRecorder));
+    startStopRecordingButton.innerHTML = "Start Recording";
+    startStopRecordingButton.className = "btn btn-primary";
+  }
+};
+myVideoOperationsButtonContainer.appendChild(startStopRecordingButton);
