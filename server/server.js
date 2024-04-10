@@ -49,6 +49,14 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('update-room', roomList);
       }
     });
+
+    socket.on('server-forwardAudioData', (data) => {
+      console.log(data.length);
+      const roomId = roomList.find(room => room.socketList.includes(socket.id))?.id;
+
+      socket.broadcast.to(roomId).emit('client-receiveAudioData', data);  //send data to all client except my client
+      //io.to(roomId).emit('client-receiveAudioData', data);  //send data to all client in the room
+    });
 });
 
 
