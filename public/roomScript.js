@@ -3,8 +3,9 @@ const videoGrid = document.getElementById("video-grid");
 const SERVER_URL = "https://" + window.location.host;
 
 let myPeer = null;
-const myVideo = document.getElementById("my-video");
-myVideo.muted = true;
+const myVideoContainer = document.getElementById("my-video-container");
+const myUsername = "User";
+let myVideo;
 let peers = {};
 
 navigator.mediaDevices
@@ -13,17 +14,18 @@ navigator.mediaDevices
     audio: true,
   })
   .then((stream) => {
+    // Uncomment the following line to use the default PeerJS server
+    // myPeer = new Peer();
     myPeer = new Peer(undefined, {
       host: "/",
       port: "3001",
       secure: false,
     });
-    // myPeer = new Peer();
     // Add my video stream
-    myVideo.srcObject = stream;
-    myVideo.addEventListener("loadedmetadata", () => {
-      myVideo.play();
-    });
+    myVideoContainer.appendChild(
+      createUserVideoComponent(myUsername, stream, color='dark')
+    )
+    myVideo = document.getElementById(`user-${myUsername}-video`);
 
     myPeer.on("open", (id) => {
       socket.emit("join-room", ROOM_ID, id);

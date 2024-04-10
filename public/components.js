@@ -129,3 +129,39 @@ function createRoomComponent(roomId, numParticipants) {
     roomDisplayWrapper.appendChild(roomDisplay);
     return roomDisplayWrapper;
 }
+
+function createUserVideoComponent(username, stream, color="primary") {
+    /**
+     * Create a user video display component
+     */
+    // Create video container
+    const userVideoComponent = document.createElement('div');
+    userVideoComponent.className = "d-flex justify-content-center";
+    
+    const userVideoComponentCard = document.createElement('div');
+    userVideoComponentCard.className = `card border-${color} d-flex justify-content-center`;
+    userVideoComponentCard.style = "width: 20rem;";
+
+    const userVideoComponentCardTitle = document.createElement('p');
+    userVideoComponentCardTitle.className = `h4 text-center text-${color}`;
+    userVideoComponentCardTitle.innerText = username;
+
+    const userVideoContainer = document.createElement('div');
+    userVideoContainer.className = "d-flex justify-content-center align-items-center pb-2";
+    const userVideo = document.createElement('video');
+    userVideo.id = `user-${username}-video`;
+    userVideo.muted = true;
+    userVideo.srcObject = stream;
+    userVideo.style = "{width: 300px; height: 300px; object-fit: cover;}";
+    userVideo.addEventListener("loadedmetadata", () => {
+        userVideo.play();
+    });
+    userVideoContainer.appendChild(userVideo);
+
+    userVideoComponentCard.appendChild(userVideoComponentCardTitle);
+    userVideoComponentCard.appendChild(userVideoContainer);
+
+    userVideoComponent.appendChild(userVideoComponentCard);
+
+    return userVideoComponent;
+}
