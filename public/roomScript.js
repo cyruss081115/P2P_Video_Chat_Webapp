@@ -1,5 +1,6 @@
 const socket = io(`/`);
 const videoGrid = document.getElementById("video-grid");
+const SERVER_URL = "https://" + window.location.host;
 
 let myPeer = null;
 const myVideo = document.getElementById("my-video");
@@ -15,15 +16,15 @@ navigator.mediaDevices
     myPeer = new Peer(undefined, {
       host: "/",
       port: "3001",
-      secure: false
+      secure: false,
     });
+    // myPeer = new Peer();
     // Add my video stream
     myVideo.srcObject = stream;
     myVideo.addEventListener("loadedmetadata", () => {
       myVideo.play();
     });
 
-    // addVideoStream(myVideo, stream);
     myPeer.on("open", (id) => {
       socket.emit("join-room", ROOM_ID, id);
     });
@@ -45,6 +46,7 @@ navigator.mediaDevices
   });
 
 socket.on("user-disconnected", (userId) => {
+  console.log("user disconnected", userId);
   if (peers[userId]) peers[userId].close();
 });
 
@@ -69,6 +71,47 @@ function addVideoStream(video, stream) {
   videoGrid.append(video);
 }
 
+function createPopUpElement(message, yesCallback, noCallback) {
+  const popUp = document.createElement("div");
+  popUp.className = "alert alert-primary";
+
+  const contentContainer = document.createElement("div");
+  contentContainer.className = "d-flex justify-content-between align-items-baseline";
+
+  const messageElement = document.createElement("p");
+  messageElement.innerHTML = message;
+  popUp.appendChild(messageElement);
+
+  const buttonContainer = document.createElement("div");
+  buttonContainer.className = "d-flex justify-content-around gap-2";
+
+  const yesButton = document.createElement("button");
+  yesButton.className = "btn btn-primary";
+  yesButton.innerHTML = "Yes";
+  yesButton.onclick = () => {
+    yesCallback();
+    popUp.remove();
+  };
+
+  const noButton = document.createElement("button");
+  noButton.className = "btn btn-danger";
+  noButton.innerHTML = "No";
+  noButton.onclick = () => {
+    noCallback();
+    popUp.remove();
+  };
+
+  buttonContainer.appendChild(yesButton);
+  buttonContainer.appendChild(noButton);
+
+  contentContainer.appendChild(messageElement);
+  contentContainer.appendChild(buttonContainer);
+
+  popUp.appendChild(contentContainer);
+
+  return popUp;
+}
+
 function startRecording(videoStream, filePrefix) {
   const mediaRecorder = new MediaRecorder(videoStream);
   const chunks = [];
@@ -76,26 +119,54 @@ function startRecording(videoStream, filePrefix) {
     chunks.push(event.data);
   };
   mediaRecorder.onstop = (event) => {
+    // Create a blob from the chunks
     const blob = new Blob(chunks, { type: "video/webm" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${filePrefix}.webm`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    // Send the recorded video to all connected users
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64data = reader.result.split(",")[1];
-      console.log("sending recorded video");
-      socket.emit("send-recorded-video", base64data);
+    // Upload to server
+    const xmlHttp = new XMLHttpRequest();
+    const filename = `${filePrefix}-${new Date().toISOString()}.webm`;
+    xmlHttp.onreadystatechange = function () {
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+        console.log(`video of name ${filename} uploaded`);
+        socket.emit("file-uploaded-to-room", filename, ROOM_ID);
+      }
     };
-    reader.readAsDataURL(blob);
+    xmlHttp.open("POST", `${SERVER_URL}/upload`, true); // true for asynchronous
+    const formData = new FormData();
+    formData.append("file", blob, filename);
+    xmlHttp.send(formData);
   };
   mediaRecorder.start();
   return mediaRecorder;
 }
+
+socket.on("file-uploaded", (filename) => {
+  // Download the file from server
+  const yesCallback = () => {
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+        const url = URL.createObjectURL(xmlHttp.response);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    };
+    xmlHttp.responseType = "blob";
+    xmlHttp.open("GET", `${SERVER_URL}/uploads/${filename}`, true); // true for asynchronous
+    xmlHttp.send(null);
+  };
+  const noCallback = () => {
+    console.log("no callback");
+  };
+  const headerContainer = document.getElementById('header-container');
+  headerContainer.insertBefore(
+    createPopUpElement(
+      `Download ${filename}?`, yesCallback, noCallback
+    ), headerContainer.firstChild
+  );
+});
 
 function stopRecording(mediaRecorder) {
   mediaRecorder.stop();
@@ -154,14 +225,3 @@ startStopRecordingButton.onclick = () => {
   }
 };
 myVideoOperationsButtonContainer.appendChild(startStopRecordingButton);
-
-socket.on("send-recorded-video", (base64data) => {
-  console.log("received recorded video");
-  const blob = new Blob([base64data], { type: "video/webm" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${filePrefix}.webm`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
