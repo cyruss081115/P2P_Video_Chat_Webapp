@@ -71,48 +71,8 @@ function addVideoStream(video, stream) {
   videoGrid.append(video);
 }
 
-function createPopUpElement(message, yesCallback, noCallback) {
-  const popUp = document.createElement("div");
-  popUp.className = "alert alert-primary";
-
-  const contentContainer = document.createElement("div");
-  contentContainer.className = "d-flex justify-content-between align-items-baseline";
-
-  const messageElement = document.createElement("p");
-  messageElement.innerHTML = message;
-  popUp.appendChild(messageElement);
-
-  const buttonContainer = document.createElement("div");
-  buttonContainer.className = "d-flex justify-content-around gap-2";
-
-  const yesButton = document.createElement("button");
-  yesButton.className = "btn btn-primary";
-  yesButton.innerHTML = "Yes";
-  yesButton.onclick = () => {
-    yesCallback();
-    popUp.remove();
-  };
-
-  const noButton = document.createElement("button");
-  noButton.className = "btn btn-danger";
-  noButton.innerHTML = "No";
-  noButton.onclick = () => {
-    noCallback();
-    popUp.remove();
-  };
-
-  buttonContainer.appendChild(yesButton);
-  buttonContainer.appendChild(noButton);
-
-  contentContainer.appendChild(messageElement);
-  contentContainer.appendChild(buttonContainer);
-
-  popUp.appendChild(contentContainer);
-
-  return popUp;
-}
-
-function startRecording(videoStream, filePrefix) {
+// Recording
+function signalStartRecording(videoStream, filePrefix) {
   const mediaRecorder = new MediaRecorder(videoStream);
   const chunks = [];
   mediaRecorder.ondataavailable = (event) => {
@@ -140,88 +100,75 @@ function startRecording(videoStream, filePrefix) {
 }
 
 socket.on("file-uploaded", (filename) => {
-  // Download the file from server
-  const yesCallback = () => {
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        const url = URL.createObjectURL(xmlHttp.response);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    };
-    xmlHttp.responseType = "blob";
-    xmlHttp.open("GET", `${SERVER_URL}/uploads/${filename}`, true); // true for asynchronous
-    xmlHttp.send(null);
-  };
-  const noCallback = () => {
-    console.log("no callback");
-  };
   const headerContainer = document.getElementById('header-container');
-  headerContainer.insertBefore(
-    createPopUpElement(
-      `Download ${filename}?`, yesCallback, noCallback
-    ), headerContainer.firstChild
+  const popUpComponent = createPopUpComponent(
+    // Define pop-up message
+    `Download ${filename}?`,
+    // Define yes callback
+    () => {
+      const xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+          const url = URL.createObjectURL(xmlHttp.response);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      };
+      xmlHttp.responseType = "blob";
+      xmlHttp.open("GET", `${SERVER_URL}/uploads/${filename}`, true);
+      xmlHttp.send(null);
+    },
+    // Empty no callback
+    () => {}
   );
+  headerContainer.insertBefore(popUpComponent, headerContainer.firstChild);
 });
 
-function stopRecording(mediaRecorder) {
+function signalStopRecording(mediaRecorder) {
   mediaRecorder.stop();
 }
 
-const myVideoOperationsButtonContainer = document.getElementById(
-  "my-video-operation-buttons"
-);
-
 // Mute/Unmute button
-const muteUnmuteButton = document.createElement("button");
-muteUnmuteButton.className = "btn btn-danger";
-muteUnmuteButton.innerHTML = "Mute";
+const muteUnmuteButton = document.getElementById("mute-unmute-button");
 muteUnmuteButton.onclick = () => {
   const enabled = myVideo.srcObject.getAudioTracks()[0].enabled;
   myVideo.srcObject.getAudioTracks()[0].enabled = !enabled;
   muteUnmuteButton.innerHTML = enabled ? "Unmute" : "Mute";
   muteUnmuteButton.className = enabled ? "btn btn-primary" : "btn btn-danger";
 };
-myVideoOperationsButtonContainer.appendChild(muteUnmuteButton);
 
 // Play/Stop button
-const playStopButton = document.createElement("button");
-playStopButton.className = "btn btn-danger";
-playStopButton.innerHTML = "Stop";
+const playStopButton = document.getElementById("play-stop-button");
 playStopButton.onclick = () => {
   const enabled = myVideo.srcObject.getVideoTracks()[0].enabled;
   myVideo.srcObject.getVideoTracks()[0].enabled = !enabled;
   playStopButton.innerHTML = enabled ? "Play" : "Stop";
   playStopButton.className = enabled ? "btn btn-primary" : "btn btn-danger";
 };
-myVideoOperationsButtonContainer.appendChild(playStopButton);
 
 // Start/Stop recording button
-const startStopRecordingButton = document.createElement("button");
-startStopRecordingButton.className = "btn btn-primary";
-startStopRecordingButton.innerHTML = "Start Recording";
+const startStopRecordingButton = document.getElementById("start-stop-recording-button");
 let mediaRecorderList = [];
 startStopRecordingButton.onclick = () => {
   if (startStopRecordingButton.innerHTML === "Start Recording") {
-    mediaRecorderList.push(startRecording(myVideo.srcObject, "my-video"));
+    mediaRecorderList.push(signalStartRecording(myVideo.srcObject, "my-video"));
     let counter = 0;
     for (let i = 0; i < videoGrid.childNodes.length; i++) {
       const video = videoGrid.childNodes[i];
       mediaRecorderList.push(
-        startRecording(video.srcObject, `user-${counter}`)
+        signalStartRecording(video.srcObject, `user-${counter}`)
       );
       counter++;
     }
     startStopRecordingButton.innerHTML = "Stop Recording";
     startStopRecordingButton.className = "btn btn-danger";
   } else {
-    mediaRecorderList.forEach((mediaRecorder) => stopRecording(mediaRecorder));
+    mediaRecorderList.forEach((mediaRecorder) => signalStopRecording(mediaRecorder));
+    mediaRecorderList = [];
     startStopRecordingButton.innerHTML = "Start Recording";
     startStopRecordingButton.className = "btn btn-primary";
   }
 };
-myVideoOperationsButtonContainer.appendChild(startStopRecordingButton);

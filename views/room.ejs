@@ -26,6 +26,7 @@
     </script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" defer></script>
     <script src="/socket.io/socket.io.js" defer></script>
+    <script src="components.js" defer></script>
     <script src="roomScript.js" defer></script>
 </head>
 <body>
@@ -37,6 +38,9 @@
         <p class="h3 text-center">User</p>
         <video id="my-video" autoplay muted></video>
         <div id="my-video-operation-buttons" class="d-flex flex-row justify-content-center my-2 gap-2">
+            <button id="mute-unmute-button" class="btn btn-danger">Mute</button>
+            <button id="play-stop-button" class="btn btn-danger">Stop</button>
+            <button id="start-stop-recording-button" class="btn btn-primary">Start Recording</button>
         </div>
     </div>
     <div>
