@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-
 import Peer from "peerjs";
-import socket from "../socket";
-
+import { io } from "socket.io-client";
 import {Typography, Button} from "@mui/material";
 
 const ChatRoom = () => {
@@ -15,6 +13,16 @@ const ChatRoom = () => {
 
   const [ playStopMyVideoState, setPlayStopMyVideoState ] = useState(true);
   const [ muteUnmuteMyAudioState, setMuteUnmuteMyAudioState ] = useState(true);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [videoStream, setVideoStream] = useState(null);
+  const mediaRecorderRef = useRef(null);
+
+  const socket = io("http://localhost:2000");
+  socket.on("fileUploaded", (data) => {
+    const { fileUrl } = data;
+    alert("Someone recorded! File URL: " + fileUrl); // Tell all the user where is the file
+  });
 
   useEffect(() => {
     const mediaDevicesSettings = {
@@ -117,6 +125,52 @@ const ChatRoom = () => {
     }
   }
 
+  const handleRecord = async () => {
+    if (!isRecording) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      setVideoStream(stream);
+  
+      const options = { mimeType: "video/webm; codecs=vp9,opus" };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+  
+      const recordedChunks = [];
+      mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        const recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
+  
+        const formData = new FormData();
+        formData.append("file", recordedBlob, "chat_recording.webm");
+  
+        try {
+          const response = await fetch("http://localhost:2000/uploads", {
+            method: "POST",
+            body: formData,
+          });
+  
+          if (response.ok) {
+            console.log("File uploaded successfully!");
+          } else {
+            console.error("File upload failed!");
+          }
+        } catch (error) {
+          console.error("An error occurred during file upload:", error);
+        }
+  
+        recordedChunks.length = 0;
+      };
+  
+      mediaRecorder.start();
+      setIsRecording(true);
+    } else {
+      // Stop recording
+      mediaRecorderRef.current.stop();
+      videoStream.getTracks().forEach((track) => track.stop());
+      setVideoStream(null);
+      setIsRecording(false);
+    }
+  };
+
   return (
     <>
       <Typography variant="h2">Chat Room</Typography>
@@ -132,6 +186,10 @@ const ChatRoom = () => {
             <div style={{margin: "0 10px"}}/>
             <Button onClick={playStopMyVideo} variant="outlined" color="warning" sx={{ textTransform: 'lowercase' }}>
               {playStopMyVideoState ? "Stop Video" : "Play Video"}
+            </Button>
+            <div style={{margin: "0 10px"}}/>
+            <Button onClick={handleRecord} variant="outlined" color="warning" sx={{ textTransform: 'lowercase' }}>
+              {isRecording ? "Stop Recording" : "Start Recording"}
             </Button>
           </div>
         </div>

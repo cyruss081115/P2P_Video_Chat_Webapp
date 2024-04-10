@@ -3,6 +3,11 @@ const app = express();
 
 const cors = require("cors");
 
+const multer = require("multer")
+const upload = multer({ dest: "uploads/" });
+const fs = require("fs");
+const path = require("path")
+
 const corsOptions = {
   origin: "*",
   methods: "*",
@@ -26,6 +31,20 @@ let roomList = [];
 app.get("/roomList", (req, res) => {
   res.json(roomList);
 });
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.get("/uploads/:filename", (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, "uploads", filename);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error("Error sending file:", err);
+      res.sendStatus(404);
+    }
+  });
+});
+
 
 io.on("connection", (socket) => {
   socket.on("create-room", () => {
@@ -57,6 +76,22 @@ io.on("connection", (socket) => {
   //     });
   //   }
   // });
+
+  app.post("/uploads", upload.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const filePath = req.file.path;
+    const newFilePath = filePath + ".webm";
+
+    fs.renameSync(filePath, newFilePath);
+
+    io.emit("fileUploaded", { fileUrl: `http://localhost:2000/${newFilePath}` });
+
+    return res.status(200).json({ fileUrl: `http://localhost:2000/${newFilePath}` });
+  });
+
 
   socket.on("join-room", (roomId, userId) => {
     console.log("join-room", roomId, userId);
