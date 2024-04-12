@@ -13,10 +13,12 @@ const io = require("socket.io")(server);
 const { v4: uuidV4 } = require("uuid");
 
 app.set("view engine", "ejs");
+app.use(express.json());
 app.use(express.static("public"));
 app.use(express.static("uploads"));
 
-// region file upload
+//#region file upload
+
 const multer = require("multer");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -33,35 +35,33 @@ const upload = multer({ storage: storage });
 app.post("/upload", upload.single("file"), (req, res) => {
   const savedFileName = req.file.originalname;
   if (req.file === undefined) {
-    res.status(400).send("No file uploaded");
-    return;
+    return res.status(400).send("No file uploaded");
   }
-  res.status(200).json({ filename: savedFileName });
+  return res.status(200).json({ filename: savedFileName });
 });
 
 app.get("/uploads/:filename", (req, res) => {
   const fileName = req.params.filename;
   if (fs.existsSync(__dirname + `/uploads/${fileName}`) === false) {
-    res.status(404).send("File not found");
-    return;
+    return res.status(404).send("File not found");
   }
-  res.sendFile(__dirname + `/uploads/${fileName}`);
+  return res.sendFile(__dirname + `/uploads/${fileName}`);
 });
 
 app.delete("/uploads/:filename", (req, res) => {
   const fileName = req.params.filename;
   fs.unlink(__dirname + `/uploads/${fileName}`, (err) => {
     if (err) {
-      res.status(400).send("Error deleting file");
+      return res.status(400).send("Error deleting file");
     } else {
-      res.send("File deleted successfully");
+      return res.send("File deleted successfully");
     }
   });
 });
+//#endregion
 
-// endregion
+//# region Room Manager
 
-// region Room Manager
 const roomManager = require("./roomManager");
 
 app.get("/roomOps/roomList", (req, res) => {
@@ -71,23 +71,88 @@ app.get("/roomOps/roomList", (req, res) => {
 app.post("/roomOps/createRoom", (req, res) => {
   const roomId = uuidV4();
   roomManager.createRoom(roomId);
-  res.json({ roomId });
+  return res.json({ roomId });
 });
 
 app.delete("/roomOps/removeRoom/:roomId", (req, res) => {
   const roomId = req.params.roomId;
-  if (roomId === undefined) res.status(400).send("Room ID not provided");
+  if (!roomId) {
+    return res.status(400).send("Room ID not provided");
+  }
   try {
     roomManager.removeRoom(roomId);
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (error) {
-    res.status(400).send(error.message);
+    return res.status(400).send(error.message);
   }
 });
 
-// endregion
+app.get("/roomOps/room/:roomId/getChatHistory", (req, res) => {
+  const roomId = req.params.roomId;
+  if (!roomId) {
+    return res.status(400).send("Room ID not provided");
+  }
+  try {
+    const room = roomManager.getRoom(roomId);
+    if (!room) {
+      return res.status(400).send("Room not found");
+    }
+    const chatHistory = room.getChatHistory();
+    return res.json(chatHistory);
+  } catch (error) {
+    return res.status(400).send(error.message);
+  }
+});
 
-// region html routes
+app.post("/roomOps/room/:roomId/addChatMessage", (req, res) => {
+  const roomId = req.params.roomId;
+  const message = req.body.message;
+  const userId = req.body.userId;
+  if (!roomId) {
+    return res.status(400).send("Room ID not provided");
+  }
+  if (!message) {
+    return res.status(400).send("Message not provided");
+  }
+  if (!userId) {
+    return res.status(400).send("User ID not provided");
+  }
+  try {
+    const room = roomManager.getRoom(roomId);
+    if (!room) {
+      return res.status(400).send("Room not found");
+    }
+    room.addChatMessage(userId, message);
+    return res.sendStatus(200);
+  } catch (error) {
+    return res.status(400).send(error.message);
+  }
+});
+
+app.delete("/roomOps/room/:roomId/removeChatMessage", (req, res) => {
+  const roomId = req.params.roomId;
+  const messageIndex = req.body.messageIndex;
+  if (!roomId) {
+    return res.status(400).send("Room ID not provided");
+  }
+  if (!messageIndex) {
+    return res.status(400).send("Message index not provided");
+  }
+  try {
+    const room = roomManager.getRoom(roomId);
+    if (!room) {
+      return res.status(400).send("Room not found");
+    }
+    room.removeChatMessage(messageIndex);
+    return res.sendStatus(200);
+  } catch (error) {
+    return res.status(400).send(error.message);
+  }
+});
+//#endregion
+
+//#region html routes
+
 app.get("/", (req, res) => {
   res.render("home");
 });
@@ -95,14 +160,13 @@ app.get("/", (req, res) => {
 app.get("/:room", (req, res) => {
   const roomId = req.params.room;
   if (!roomManager.roomExists(roomId)) {
-    res.redirect("/");
-    return;
+    return res.redirect("/");
   }
   res.render("room", { roomId: req.params.room });
 });
-// endregion
+//#endregion
 
-// region socket.io
+//#region socket.io
 io.on("connection", (socket) => {
   socket.on("join-room", (roomId, userId) => {
     console.log("user connected to room", roomId, userId);
@@ -121,5 +185,6 @@ io.on("connection", (socket) => {
     });
   });
 });
-// endregion
+//#endregion
+
 server.listen(3000);

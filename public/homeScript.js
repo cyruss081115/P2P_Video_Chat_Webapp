@@ -43,3 +43,6 @@ const removeRoom = (roomId) => {
 // Update room display on page load
 updateRoomDisplay();
 createRoomButton.onclick = createRoom;
+
+const tmpContainer = document.getElementById("tmp-container");
+

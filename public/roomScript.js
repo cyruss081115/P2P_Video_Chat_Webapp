@@ -174,3 +174,6 @@ startStopRecordingButton.onclick = () => {
     startStopRecordingButton.className = "btn btn-primary";
   }
 };
+
+// TODO: Implement the logics of chatroom
+// TODO: Get user's name when loading this page

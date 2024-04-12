@@ -165,3 +165,55 @@ function createUserVideoComponent(username, stream, color="primary") {
 
     return userVideoComponent;
 }
+
+function createChatBubble(message, username, color="primary") {
+    /**
+     * Create a chat bubble component
+     */
+    const chatBubble = document.createElement('div');
+    chatBubble.className = `d-flex justify-content-start py-1`;
+    const chatBubbleCard = document.createElement('div');
+    chatBubbleCard.className = `card border-${color} d-flex justify-content-start`;
+    chatBubbleCard.style = "width: 20rem;";
+    const chatBubbleCardBody = document.createElement('div');
+    chatBubbleCardBody.className = "card-body";
+    const chatBubbleCardTitle = document.createElement('p');
+    chatBubbleCardTitle.className = `h6 text-center text-${color}`;
+    chatBubbleCardTitle.innerText = username;
+    const chatBubbleCardText = document.createElement('p');
+    chatBubbleCardText.className = `text-${color}`;
+    chatBubbleCardText.innerText = message;
+    chatBubbleCardBody.appendChild(chatBubbleCardTitle);
+    chatBubbleCardBody.appendChild(chatBubbleCardText);
+    chatBubbleCard.appendChild(chatBubbleCardBody);
+    chatBubble.appendChild(chatBubbleCard);
+    return chatBubble;
+}
+
+function createAlphabetFlatIconComponent(alphabet) {
+  /**
+   * Create an alphabet flat icon component
+   * 
+   * The alphabet flat icon component has the following structure:
+   * <div class="d-flex justify-content-center align-middle" style="width: 45px; min-width: 45px; height: 45px; background-color: rgb(93, 113, 118); border-radius: 22px ; color: white;">
+   *  <p class="m-0" style="vertical-align: middle; line-height: 45px; font-size: large;">{character}</p>
+   * </div>
+   */
+  assert(alphabet.length == 1, "Character is required");
+
+  const alphabetFlatIconComponent = document.createElement("div");
+  alphabetFlatIconComponent.className = "d-flex justify-content-center align-middle";
+  alphabetFlatIconComponent.style = "width: 45px; min-width: 45px; height: 45px; background-color: rgb(93, 113, 118); border-radius: 22px ; color: white;";
+
+  const alphabetTextField = document.createElement("p");
+  alphabetTextField.className = "m-0";
+  alphabetTextField.style = "vertical-align: middle; line-height: 45px; font-size: large;";
+  alphabetTextField.innerText = alphabet;
+
+  alphabetFlatIconComponent.appendChild(alphabetTextField);
+
+  return alphabetFlatIconComponent;
+}
+
+// TODO: Create chat bubble component
+// TODO: Create chat room component
