@@ -70,8 +70,9 @@ class Room {
   * @modifies this._chatHistory
   */
   addChatMessage(userId, message) {
+    const user = this._users.find(user => user.userId === userId);
     this._chatHistory.push({
-      userId: userId,
+      user: user,
       message: message,
     });
   }

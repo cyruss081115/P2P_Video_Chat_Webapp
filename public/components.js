@@ -385,3 +385,116 @@ function createChatBubbleComponent(username, message) {
 
 }
 // TODO: Create chat room component
+
+function createChatRoomModalComponent(id, chatHistoryContainerId, sendCallback, cancelCallack) {
+  /**
+   * Create a chat room modal component
+   * @param {String} id - The ID of the modal component
+   * @param {String} chatHistoryContainerId - The ID of the chat history container
+   * @param {Function} sendCallback - The callback function to send a chat message
+   * @param {Function} cancelCallack - The callback function to cancel the chat room
+   * @returns {HTMLDivElement} - The chat room modal component
+   * 
+   * The chat room modal component has the following structure:
+   * <div class="modal fade" id="{id}" tabindex="-1" aria-labelledby="{id}Label" aria-hidden="true">
+   *  <div class="modal-dialog modal-dialog-scrollable">
+   *   <div class="modal-content">
+   *    <div class="modal-header">
+   *     <h5 class="modal-title">Chat Room</h5>
+   *     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+   *    </div>
+   *    <div class="modal-body">
+   *     <div id={chatHistoryContainerId} class="d-flex flex-column"></div>
+   *   </div>
+   *   <div class="modal-footer">
+   *     <input type="text" class="form-control" placeholder="Enter message" id="chat-room-message">
+   *     <button type="button" class="btn btn-primary" onclick="sendCallback(message)">Send</button>
+   *     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="cancelCallack()">Cancel</button>
+   *    </div>
+   *   </div>
+   *  </div>
+   * </div>
+   */
+  console.assert(typeof id === "string", "ID must be a string");
+  console.assert(typeof sendCallback === "function", "Send callback must be a function");
+  console.assert(typeof cancelCallack === "function", "Cancel callback must be a function");
+
+  const chatRoomModalComponent = document.createElement("div");
+  chatRoomModalComponent.id = id;
+  chatRoomModalComponent.className = "modal fade";
+  chatRoomModalComponent.tabIndex = "-1";
+  chatRoomModalComponent.setAttribute("aria-labelledby", `${id}Label`);
+  chatRoomModalComponent.setAttribute("aria-hidden", "true");
+
+  const modalDialog = document.createElement("div");
+  modalDialog.className = "modal-dialog modal-dialog-scrollable";
+
+  const modalContent = document.createElement("div");
+  modalContent.className = "modal-content";
+
+  const modalHeader = document.createElement("div");
+  modalHeader.className = "modal-header";
+
+  const modalTitle = document.createElement("h5");
+  modalTitle.className = "modal-title";
+  modalTitle.innerText = "Chat Room";
+
+  const modalCloseButton = document.createElement("button");
+  modalCloseButton.type = "button";
+  modalCloseButton.className = "btn-close";
+  modalCloseButton.setAttribute("data-bs-dismiss", "modal");
+  modalCloseButton.setAttribute("aria-label", "Close");
+
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(modalCloseButton);
+
+  const modalBody = document.createElement("div");
+  modalBody.className = "modal-body";
+
+  const chatHistoryContainer = document.createElement("div");
+  chatHistoryContainer.id = chatHistoryContainerId;
+
+  modalBody.appendChild(chatHistoryContainer);
+
+  const modalFooter = document.createElement("div");
+  modalFooter.className = "modal-footer";
+
+  const sendButton = document.createElement("button");
+  sendButton.type = "button";
+  sendButton.className = "btn btn-primary";
+  sendButton.innerText = "Send";
+  sendButton.onclick = () => {
+    const messageElement = document.getElementById("chat-room-message");
+    sendCallback(messageElement.value);
+    messageElement.value = "";
+  }
+
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.className = "btn btn-secondary";
+  cancelButton.innerText = "Cancel";
+  cancelButton.setAttribute("data-bs-dismiss", "modal");
+  cancelButton.onclick = () => {
+    cancelCallack();
+  }
+
+  const messageInput = document.createElement("input");
+  messageInput.type = "text";
+  messageInput.className = "form-control";
+  messageInput.placeholder = "Enter message";
+  messageInput.id = "chat-room-message";
+
+  modalFooter.appendChild(messageInput);
+  modalFooter.appendChild(sendButton);
+  modalFooter.appendChild(cancelButton);
+
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalContent.appendChild(modalFooter);
+
+  modalDialog.appendChild(modalContent);
+  chatRoomModalComponent.appendChild(modalDialog);
+
+  return chatRoomModalComponent;
+
+}

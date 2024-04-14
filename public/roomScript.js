@@ -7,7 +7,9 @@ const myVideoContainer = document.getElementById("my-video-container");
 let myVideo;
 let peers = {};
 
-//# region Peer Connection
+let myUserID = null;
+
+//#region Peer Connection
 navigator.mediaDevices
   .getUserMedia({
     video: true,
@@ -28,7 +30,8 @@ navigator.mediaDevices
     myVideo = document.getElementById(`user-${USERNAME}-video`);
 
     myPeer.on("open", (id) => {
-      socket.emit("join-room", ROOM_ID, USERNAME, id);
+      myUserID = id;
+      socket.emit("join-room", ROOM_ID, USERNAME, myUserID);
     });
     myPeer.on("call", (call) => {
       call.answer(stream);
@@ -220,5 +223,64 @@ startStopRecordingButton.onclick = () => {
   }
 };
 
-// TODO: Implement the logics of chatroom
-// TODO: Get user's name when loading this page
+//#region Chat modal
+// Open chat button
+const chatModalId = "chatRoomModal";
+const openChatButton = document.getElementById("open-chat-button");
+openChatButton.setAttribute("data-bs-toggle", "modal");
+openChatButton.setAttribute("data-bs-target", `#${chatModalId}`);
+
+const modalContainer = document.getElementById("modal-container");
+
+const chatMessageContainerId = "chat-message-container";
+const chatRoomModal = createChatRoomModalComponent(
+  chatModalId,
+  chatMessageContainerId,
+  // Send message callback
+  (message) => {
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = () => {
+      if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+        socket.emit("chat-message-updated", ROOM_ID);
+      }
+    };
+    xmlHttp.open("POST", `${SERVER_URL}/roomOps/room/${ROOM_ID}/addChatMessage`, true);
+    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlHttp.send(JSON.stringify({ userId: myUserID, message }));
+  },
+  // Define close callback
+  () => {}
+);
+
+modalContainer.appendChild(chatRoomModal);
+
+// Update chat messages
+const updateChatMessageContainer = (chatMessages) => {
+  const chatMessageContainer = document.getElementById(chatMessageContainerId);
+  chatMessageContainer.innerHTML = "";
+  chatMessages.forEach((chatMessage) => {
+    const username = chatMessage.user.username;
+    const message = chatMessage.message;
+    chatMessageContainer.appendChild(createChatBubbleComponent(username, message));
+  });
+};
+
+const updateChatMessages = (roomId) => {
+  const xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = () => {
+    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+      const chatMessages = JSON.parse(xmlHttp.responseText);
+      updateChatMessageContainer(chatMessages);
+    }
+  };
+  xmlHttp.open("GET", `${SERVER_URL}/roomOps/room/${roomId}/getChatHistory`, true);
+  xmlHttp.send(null);
+};
+
+socket.on("chat-message-updated", (roomId) => {
+  updateChatMessages(roomId);
+});
+//#endregion
+
+// Update chat messages on load
+updateChatMessages(ROOM_ID);

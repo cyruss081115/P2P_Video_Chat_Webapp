@@ -43,21 +43,3 @@ const removeRoom = (roomId) => {
 // Update room display on page load
 updateRoomDisplay();
 createRoomButton.onclick = createRoom;
-
-const tmpContainer = document.getElementById("tmp-container");
-
-const chatBubbleComponent = createChatBubbleComponent("David", "nihaoma!");
-const chatBubbleComponent2 = createChatBubbleComponent("Johnny", "cao!");
-console.log(chatBubbleComponent);
-tmpContainer.appendChild(chatBubbleComponent);
-tmpContainer.appendChild(chatBubbleComponent2);
-const modalComponent = createQueryModalComponent("myModal", "heelo", ["Username", "My idk", "aslkdf", "alsdjf;lakjsd;fk"], (value) => {console.log(value)}, () => {console.log("no")});
-
-tmpContainer.appendChild(modalComponent);
-const tmpButton = document.createElement("div");
-tmpButton.innerHTML = `<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
-Open modal
-</button>
-`
-
-tmpContainer.appendChild(tmpButton);

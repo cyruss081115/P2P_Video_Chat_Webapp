@@ -112,6 +112,8 @@ app.post("/roomOps/room/:roomId/addChatMessage", (req, res) => {
   const roomId = req.params.roomId;
   const message = req.body.message;
   const userId = req.body.userId;
+
+  console.log("Server received addChatMessage request", roomId, message, userId);
   if (!roomId) {
     return res.status(400).send("Room ID not provided");
   }
@@ -181,8 +183,16 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
       socket.broadcast.to(roomId).emit("user-disconnected", userId, username);
-      roomManager.leaveRoom(roomId, userId);
+      try {
+        roomManager.leaveRoom(roomId, userId);
+      } catch (error) {
+        console.log(error.message);
+      }
     });
+
+    socket.on("chat-message-updated", (roomId) => {
+      io.to(roomId).emit("chat-message-updated", roomId);
+    })
 
     socket.on("file-uploaded-to-room", (filename, roomId) => {
       console.log("server received file-uploaded event");
