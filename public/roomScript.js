@@ -4,10 +4,10 @@ const SERVER_URL = "https://" + window.location.host;
 
 let myPeer = null;
 const myVideoContainer = document.getElementById("my-video-container");
-const myUsername = "User";
 let myVideo;
 let peers = {};
 
+//# region Peer Connection
 navigator.mediaDevices
   .getUserMedia({
     video: true,
@@ -23,24 +23,59 @@ navigator.mediaDevices
     });
     // Add my video stream
     myVideoContainer.appendChild(
-      createUserVideoComponent(myUsername, stream, color='dark')
-    )
-    myVideo = document.getElementById(`user-${myUsername}-video`);
+      createUserVideoComponent(USERNAME, stream, (color = "dark"))
+    );
+    myVideo = document.getElementById(`user-${USERNAME}-video`);
 
     myPeer.on("open", (id) => {
-      socket.emit("join-room", ROOM_ID, id);
+      socket.emit("join-room", ROOM_ID, USERNAME, id);
     });
     myPeer.on("call", (call) => {
       call.answer(stream);
-      const video = document.createElement("video");
-      call.on("stream", (userVideoStream) => {
-        addVideoStream(video, userVideoStream);
-      });
+      const peerUserId = call.peer;
+      const xmlHttp = new XMLHttpRequest();
+      console.log("peerUserId", peerUserId);
+      xmlHttp.onreadystatechange = () => {
+        if (
+          xmlHttp.readyState == 4 &&
+          xmlHttp.status == 200 &&
+          xmlHttp.responseText
+        ) {
+          const users = JSON.parse(xmlHttp.responseText);
+          const username = users.find(
+            (user) => user.userId === peerUserId
+          ).username;
+          console.log(`new user ${username} connected to room ${ROOM_ID}`);
+          let newUserVideo = null;
+          call.on("stream", (userVideoStream) => {
+            if (!peers[peerUserId]) {
+              newUserVideo = createUserVideoComponent(
+                username,
+                userVideoStream,
+                "secondary"
+              );
+              console.log("Initial newUserVideo", newUserVideo);
+              videoGrid.appendChild(newUserVideo);
+
+              peers[peerUserId] = call;
+            }
+          });
+          call.on("close", () => {
+            newUserVideo.remove();
+          });
+        }
+      };
+      xmlHttp.open(
+        "GET",
+        `${SERVER_URL}/roomOps/room/${ROOM_ID}/getUsers`,
+        false
+      );
+      xmlHttp.send(null);
     });
 
-    socket.on("user-connected", (userId) => {
-      console.log("new user connected", userId);
-      connectToNewUser(userId, stream);
+    socket.on("user-connected", (userId, username) => {
+      console.log("new user connected", userId, username);
+      connectToNewUser(userId, username, stream);
     });
   })
   .catch((error) => {
@@ -51,18 +86,28 @@ socket.on("user-disconnected", (userId) => {
   console.log("user disconnected", userId);
   if (peers[userId]) peers[userId].close();
 });
+//#endregion
 
-function connectToNewUser(userId, stream) {
+function connectToNewUser(userId, username, stream) {
   const call = myPeer.call(userId, stream);
-  const video = document.createElement("video");
+  let newUserVideo = null;
   call.on("stream", (userVideoStream) => {
-    addVideoStream(video, userVideoStream);
+    if (!peers[userId]) {
+      newUserVideo = createUserVideoComponent(
+        username,
+        userVideoStream,
+        "secondary"
+      );
+      videoGrid.appendChild(newUserVideo);
+
+      peers[userId] = call;
+    }
   });
   call.on("close", () => {
-    video.remove();
+    if (peers[userId]) {
+      newUserVideo.remove();
+    }
   });
-
-  peers[userId] = call;
 }
 
 function addVideoStream(video, stream) {
@@ -102,8 +147,8 @@ function signalStartRecording(videoStream, filePrefix) {
 }
 
 socket.on("file-uploaded", (filename) => {
-  const headerContainer = document.getElementById('header-container');
-  const popUpComponent = createPopUpComponent(
+  const headerContainer = document.getElementById("header-container");
+  const popUpBanner = createPopUpBannerComponent(
     // Define pop-up message
     `Download ${filename}?`,
     // Define yes callback
@@ -126,7 +171,7 @@ socket.on("file-uploaded", (filename) => {
     // Empty no callback
     () => {}
   );
-  headerContainer.insertBefore(popUpComponent, headerContainer.firstChild);
+  headerContainer.insertBefore(popUpBanner, headerContainer.firstChild);
 });
 
 function signalStopRecording(mediaRecorder) {
@@ -152,23 +197,23 @@ playStopButton.onclick = () => {
 };
 
 // Start/Stop recording button
-const startStopRecordingButton = document.getElementById("start-stop-recording-button");
+const startStopRecordingButton = document.getElementById(
+  "start-stop-recording-button"
+);
 let mediaRecorderList = [];
 startStopRecordingButton.onclick = () => {
   if (startStopRecordingButton.innerHTML === "Start Recording") {
-    mediaRecorderList.push(signalStartRecording(myVideo.srcObject, "my-video"));
-    let counter = 0;
-    for (let i = 0; i < videoGrid.childNodes.length; i++) {
-      const video = videoGrid.childNodes[i];
-      mediaRecorderList.push(
-        signalStartRecording(video.srcObject, `user-${counter}`)
-      );
-      counter++;
-    }
+    mediaRecorderList.push(signalStartRecording(myVideo.srcObject, `user-${USERNAME}-video`));
+    videoGrid.childNodes.forEach((videoComponent) => {
+      const video = videoComponent.getElementsByTagName("video")[0];
+      mediaRecorderList.push(signalStartRecording(video.srcObject, `${video.id}`));
+    });
     startStopRecordingButton.innerHTML = "Stop Recording";
     startStopRecordingButton.className = "btn btn-danger";
   } else {
-    mediaRecorderList.forEach((mediaRecorder) => signalStopRecording(mediaRecorder));
+    mediaRecorderList.forEach((mediaRecorder) =>
+      signalStopRecording(mediaRecorder)
+    );
     mediaRecorderList = [];
     startStopRecordingButton.innerHTML = "Start Recording";
     startStopRecordingButton.className = "btn btn-primary";

@@ -36,13 +36,18 @@ class Room {
   /*
   * Add a user to the room
   * @param {string} userId
+  * @param {string} username
   * @throws {Error} if user is already in room
   * @return {undefined}
   * @modifies this._users
   */
-  addUser(userId) {
-    if (this._users.includes(userId)) throw new Error(`User ${userId} already in room`);
-    this._users.push(userId);
+  addUser(userId, username) {
+    const user = {
+      userId: userId,
+      username: username,
+    }
+    if (this._users.includes(user)) throw new Error(`User ${userId} already in room`);
+    this._users.push(user);
   }
 
   /*
@@ -113,9 +118,9 @@ class RoomManager {
     return this.getRoom(roomId) !== undefined;
   }
 
-  joinRoom(roomId, userId) {
+  joinRoom(roomId, userId, username) {
     const room = this.getRoom(roomId);
-    room.addUser(userId);
+    room.addUser(userId, username);
   }
 
   leaveRoom(roomId, userId) {

@@ -1,12 +1,12 @@
-function createPopUpComponent(message, yesCallback, noCallback) {
+function createPopUpBannerComponent(message, yesCallback, noCallback) {
   /**
-   * Create a pop-up element with the given message and two buttons
+   * Create a pop-up banner element with the given message and two buttons
    * @param {String} message - The message to display in the pop-up
    * @param {Function} yesCallback - The callback function for the "Yes" button
    * @param {Function} noCallback - The callback function for the "No" button
    * @returns {HTMLDivElement} - The pop-up element
    *
-   * The pop-up element has the following structure:
+   * The pop-up banner element has the following structure:
    * <div class="alert alert-primary">
    *  <p>${message}</p>
    * <div class="d-flex justify-content-between align-items-baseline">
@@ -16,8 +16,8 @@ function createPopUpComponent(message, yesCallback, noCallback) {
    * <button class="btn btn-danger">No</button>
    * </div>
    */
-  const popUp = document.createElement("div");
-  popUp.className = "alert alert-primary";
+  const popUpBanner = document.createElement("div");
+  popUpBanner.className = "alert alert-primary";
 
   const contentContainer = document.createElement("div");
   contentContainer.className =
@@ -25,7 +25,7 @@ function createPopUpComponent(message, yesCallback, noCallback) {
 
   const messageElement = document.createElement("p");
   messageElement.innerHTML = message;
-  popUp.appendChild(messageElement);
+  popUpBanner.appendChild(messageElement);
 
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "d-flex justify-content-around gap-2";
@@ -35,7 +35,7 @@ function createPopUpComponent(message, yesCallback, noCallback) {
   yesButton.innerHTML = "Yes";
   yesButton.onclick = () => {
     yesCallback();
-    popUp.remove();
+    popUpBanner.remove();
   };
 
   const noButton = document.createElement("button");
@@ -43,7 +43,7 @@ function createPopUpComponent(message, yesCallback, noCallback) {
   noButton.innerHTML = "No";
   noButton.onclick = () => {
     noCallback();
-    popUp.remove();
+    popUpBanner.remove();
   };
 
   buttonContainer.appendChild(yesButton);
@@ -52,9 +52,109 @@ function createPopUpComponent(message, yesCallback, noCallback) {
   contentContainer.appendChild(messageElement);
   contentContainer.appendChild(buttonContainer);
 
-  popUp.appendChild(contentContainer);
+  popUpBanner.appendChild(contentContainer);
 
-  return popUp;
+  return popUpBanner;
+}
+
+function createQueryModalComponent(id, title, formQueries, proceedCallback, cancelCallback) {
+  console.assert(typeof id === "string", "ID must be a string")
+  console.assert(typeof title === "string", "Title must be a string")
+  console.assert(Array.isArray(formQueries), "Form queries must be an array")
+  console.assert(typeof proceedCallback === "function", "Proceed callback must be a function")
+  console.assert(typeof cancelCallback === "function", "Cancel callback must be a function")
+
+
+  const modalComponent = document.createElement("div");
+  modalComponent.id = id;
+  modalComponent.className = "modal fade";
+  modalComponent.tabIndex = "-1";
+  modalComponent.setAttribute("aria-labelledby", `${id}Label`);
+  modalComponent.setAttribute("aria-hidden", "true");
+
+  const modalDialog = document.createElement("div");
+  modalDialog.className = "modal-dialog";
+
+  const modalContent = document.createElement("div");
+  modalContent.className = "modal-content";
+
+  const modalHeader = document.createElement("div");
+  modalHeader.className = "modal-header";
+
+  const modalTitle = document.createElement("h5");
+  modalTitle.className = "modal-title";
+  modalTitle.innerText = title;
+
+  const modalCloseButton = document.createElement("button");
+  modalCloseButton.type = "button";
+  modalCloseButton.className = "btn-close";
+  modalCloseButton.setAttribute("data-bs-dismiss", "modal");
+  modalCloseButton.setAttribute("aria-label", "Close");
+
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(modalCloseButton);
+
+  const modalBody = document.createElement("div");
+  modalBody.className = "modal-body align-items-center";
+
+  const modalQueryForm = document.createElement("form");
+  const createFormQuery = (formQuery) => {
+    const formQueryContainer = document.createElement("div");
+    formQueryContainer.className = "mb-3";
+
+    const formQueryTitle = document.createElement("label");
+    formQueryTitle.className = "form-label";
+    formQueryTitle.innerText = formQuery;
+    formQueryTitle.htmlFor = `modal-form-${formQuery}`;
+    formQueryContainer.appendChild(formQueryTitle);
+
+    const formQueryInput = document.createElement("input");
+    formQueryInput.id = `modal-form-${formQuery}`;
+    formQueryInput.type = "text";
+    formQueryInput.className = "form-control";
+    formQueryInput.placeholder = formQuery;
+    formQueryContainer.appendChild(formQueryInput);
+
+    modalQueryForm.appendChild(formQueryContainer);
+  }
+  formQueries.forEach(createFormQuery);
+
+  modalBody.appendChild(modalQueryForm);
+
+  const modalFooter = document.createElement("div");
+  modalFooter.className = "modal-footer";
+
+  const proceedButton = document.createElement("button");
+  proceedButton.type = "button";
+  proceedButton.className = "btn btn-primary";
+  proceedButton.innerText = "Proceed";
+  proceedButton.onclick = () => {
+    const formQueryValues = formQueries.map((formQuery) => {
+      return document.getElementById(`modal-form-${formQuery}`).value;
+    });
+    proceedCallback(formQueryValues);
+  }
+
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.className = "btn btn-secondary";
+  cancelButton.innerText = "Cancel";
+  cancelButton.setAttribute("data-bs-dismiss", "modal");
+  cancelButton.onclick = () => {
+    cancelCallback();
+  }
+
+  modalFooter.appendChild(proceedButton);
+  modalFooter.appendChild(cancelButton);
+
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalContent.appendChild(modalFooter);
+
+  modalDialog.appendChild(modalContent);
+  modalComponent.appendChild(modalDialog);
+
+  return modalComponent;
 }
 
 function createRoomComponent(roomId, numParticipants) {
@@ -97,14 +197,29 @@ function createRoomComponent(roomId, numParticipants) {
     roomDisplaySubtitle.className = "card-subtitle text-center";
     roomDisplaySubtitle.innerText = `Participants: ${numParticipants}`;
 
+    // Create join room modal
+    const joinRoomModal = createQueryModalComponent(
+      `join-room-${roomId}`, "Join Room", ["Enter Username"],
+      // Proceed callback
+      (values) => {
+        const username = values[0];
+        if (username.length <= 0) {
+          return alert("Please enter a username");
+        }
+        window.location.href = `/${roomId}?username=${username}`;
+      },
+      // Cancel callback
+      () => {}
+    );
+    roomDisplayBody.appendChild(joinRoomModal);
 
     // Create join room button
     const joinRoomButton = document.createElement('button');
     joinRoomButton.className = "btn btn-primary";
     joinRoomButton.innerText = "Join Room";
-    joinRoomButton.onclick = () => {
-        window.location.href = `/${roomId}`;
-    }
+    joinRoomButton.setAttribute("data-bs-toggle", "modal");
+    joinRoomButton.setAttribute("data-bs-target", `#join-room-${roomId}`);
+
     // Create remove room button
     const removeRoomButton = document.createElement('button');
     removeRoomButton.className = "btn btn-danger";
@@ -199,7 +314,7 @@ function createAlphabetFlatIconComponent(alphabet) {
    *  <p class="m-0" style="vertical-align: middle; line-height: 45px; font-size: large;">{character}</p>
    * </div>
    */
-  assert(alphabet.length == 1, "Character is required");
+  console.assert(alphabet.length == 1, "Character is required");
 
   const alphabetFlatIconComponent = document.createElement("div");
   alphabetFlatIconComponent.className = "d-flex justify-content-center align-middle";
@@ -216,4 +331,57 @@ function createAlphabetFlatIconComponent(alphabet) {
 }
 
 // TODO: Create chat bubble component
+function createChatBubbleComponent(username, message) {
+  /**
+   * Create a chat bubble component
+   *
+   * @param {String} username - The username of the chat message
+   * @param {String} message - The message content
+   * @returns {HTMLDivElement} - The chat bubble component
+   *
+   * The chat bubble component has the following structure:
+   * <div class="d-flex flex-row justify-content-start mb-4">
+   *  <div class="d-flex justify-content-center align-middle" style="width: 45px; min-width: 45px; height: 45px; background-color: rgb(93, 113, 118); border-radius: 22px ; color: white;">
+   *   <p class="m-0" style="vertical-align: middle; line-height: 45px; font-size: large;">{character}</p>
+   *  </div>
+   *  <div class="ms-3">
+   *   <p class="h6 mb-1">{username}</p>
+   *   <div class="p-3" style="border-radius: 15px; background-color: rgba(57, 192, 237,.2);">
+   *    <p class="small mb-0">{message}</p>
+   *   </div>
+   *  </div>
+   * </div>
+   *
+   */
+  const chatBubble = document.createElement("div");
+  chatBubble.className = "d-flex flex-row justify-content-start mb-4";
+
+  const userAvatar = createAlphabetFlatIconComponent(username[0]);
+
+  const chatBubbleContentContainer = document.createElement("div");
+  chatBubbleContentContainer.className = "ms-3";
+
+  const usernameElement = document.createElement("p");
+  usernameElement.className = "h6 mb-1";
+  usernameElement.innerText = username;
+
+  const chatBubbleContentBody = document.createElement("div");
+  chatBubbleContentBody.className = "p-3";
+  chatBubbleContentBody.style = "border-radius: 15px; background-color: rgba(57, 192, 237,.2);"
+
+  const chatBubbleContentBodyText = document.createElement("p");
+  chatBubbleContentBodyText.className = "small mb-0";
+  chatBubbleContentBodyText.innerText = message;
+
+  chatBubbleContentBody.appendChild(chatBubbleContentBodyText);
+
+  chatBubbleContentContainer.appendChild(usernameElement);
+  chatBubbleContentContainer.appendChild(chatBubbleContentBody);
+
+  chatBubble.appendChild(userAvatar);
+  chatBubble.appendChild(chatBubbleContentContainer);
+
+  return chatBubble
+
+}
 // TODO: Create chat room component

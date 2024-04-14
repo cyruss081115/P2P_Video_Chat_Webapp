@@ -87,6 +87,10 @@ app.delete("/roomOps/removeRoom/:roomId", (req, res) => {
   }
 });
 
+app.get("/roomOps/room/:roomId/getUsers", (req, res) => {
+  return res.status(200).json(roomManager.getRoom(req.params.roomId).getUsers());
+});
+
 app.get("/roomOps/room/:roomId/getChatHistory", (req, res) => {
   const roomId = req.params.roomId;
   if (!roomId) {
@@ -159,23 +163,24 @@ app.get("/", (req, res) => {
 
 app.get("/:room", (req, res) => {
   const roomId = req.params.room;
+  const username = req.query.username;
   if (!roomManager.roomExists(roomId)) {
     return res.redirect("/");
   }
-  res.render("room", { roomId: req.params.room });
+  res.render("room", { roomId: roomId, username: username });
 });
 //#endregion
 
 //#region socket.io
 io.on("connection", (socket) => {
-  socket.on("join-room", (roomId, userId) => {
-    console.log("user connected to room", roomId, userId);
+  socket.on("join-room", (roomId, username, userId) => {
+    console.log(`user ${username} connected to room`, roomId, userId);
     socket.join(roomId);
-    socket.broadcast.to(roomId).emit("user-connected", userId);
-    roomManager.joinRoom(roomId, userId);
+    socket.broadcast.to(roomId).emit("user-connected", userId, username);
+    roomManager.joinRoom(roomId, userId, username);
 
     socket.on("disconnect", () => {
-      socket.broadcast.to(roomId).emit("user-disconnected", userId);
+      socket.broadcast.to(roomId).emit("user-disconnected", userId, username);
       roomManager.leaveRoom(roomId, userId);
     });
 
