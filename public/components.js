@@ -105,11 +105,11 @@ function createQueryModalComponent(id, title, formQueries, proceedCallback, canc
     const formQueryTitle = document.createElement("label");
     formQueryTitle.className = "form-label";
     formQueryTitle.innerText = formQuery;
-    formQueryTitle.htmlFor = `modal-form-${formQuery}`;
+    formQueryTitle.htmlFor = `modal-${id}-form-${formQuery}`;
     formQueryContainer.appendChild(formQueryTitle);
 
     const formQueryInput = document.createElement("input");
-    formQueryInput.id = `modal-form-${formQuery}`;
+    formQueryInput.id = `modal-${id}-form-${formQuery}`;
     formQueryInput.type = "text";
     formQueryInput.className = "form-control";
     formQueryInput.placeholder = formQuery;
@@ -130,7 +130,7 @@ function createQueryModalComponent(id, title, formQueries, proceedCallback, canc
   proceedButton.innerText = "Proceed";
   proceedButton.onclick = () => {
     const formQueryValues = formQueries.map((formQuery) => {
-      return document.getElementById(`modal-form-${formQuery}`).value;
+      return document.getElementById(`modal-${id}-form-${formQuery}`).value;
     });
     proceedCallback(formQueryValues);
   }
