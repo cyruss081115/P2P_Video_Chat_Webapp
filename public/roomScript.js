@@ -284,3 +284,38 @@ socket.on("chat-message-updated", (roomId) => {
 
 // Update chat messages on load
 updateChatMessages(ROOM_ID);
+
+// Karaoke- vocie remover
+function karaoke(evt) {
+  var inputL = evt.inputBuffer.getChannelData(0),
+    inputR = evt.inputBuffer.getChannelData(1),
+    output = evt.outputBuffer.getChannelData(0),
+    len = inputL.length,
+    i = 0;
+  for (; i < len; i++) {
+    output[i] = inputL[i] - inputR[i];
+  }
+}
+// handle karaoke input file
+document.addEventListener('DOMContentLoaded', function () {
+  var fileInput = document.getElementById('audioFileInput');
+  var audioPlayer = document.getElementById('audioPlayer');
+  audioPlayer.style.display = 'none'; 
+
+  fileInput.addEventListener('change', function () {
+    var file = fileInput.files[0];
+    var fileURL = URL.createObjectURL(file);
+
+    audioPlayer.src = fileURL;
+    audioPlayer.addEventListener('loadedmetadata', function () {
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      var audioContext = new AudioContext();
+      var sourceNode = audioContext.createMediaElementSource(audioPlayer);
+      var scriptNode = audioContext.createScriptProcessor(4096, 2, 2);
+      scriptNode.onaudioprocess = karaoke;
+      sourceNode.connect(scriptNode);
+      scriptNode.connect(audioContext.destination);
+      audioPlayer.style.display = 'block'; 
+    });
+  });
+});

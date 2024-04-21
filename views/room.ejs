@@ -43,18 +43,24 @@
         </ul>
         </nav>
     <div id="header-container" class="col">
-        <p class="h1 text-center">Welcome to Chat Room</p>
+        <p class="h1 text-center">Start chating!</p>
         <p class="h5 text-center">Room ID: <%= roomId %></p>
     </div>
     <div class="d-flex flex-column justify-content-center">
         <div id="my-video-container"></div>
         <!-- <video id="my-video" autoplay muted></video> -->
         <div id="my-video-operation-buttons" class="d-flex flex-row justify-content-center my-2 gap-2">
-            <button id="mute-unmute-button" class="btn btn-danger">Mute</button>
-            <button id="play-stop-button" class="btn btn-danger">Stop</button>
-            <button id="start-stop-recording-button" class="btn btn-primary">Start Recording</button>
-            <button id="open-chat-button" class="btn btn-primary"><i class="fa fa-comments-o" aria-hidden="true"></i></button>
+          <button id="mute-unmute-button" class="btn btn-danger">Mute</button>
+          <button id="play-stop-button" class="btn btn-danger">Stop</button>
+          <button id="start-stop-recording-button" class="btn btn-primary">Start Recording</button>
+          <button id="open-chat-button" class="btn btn-primary"><i class="fa fa-comments-o" aria-hidden="true"></i></button>
         </div>
+        <div class="d-flex flex-row justify-content-center my-2 gap-2">
+            <input type="file" id="audioFileInput" class="btn btn-danger" style="background-color: #a29bfe;">
+          </div>
+        <div class="d-flex flex-row justify-content-center my-2 gap-2">
+            <audio id="audioPlayer" controls></audio></div>
+      </div>
     </div>
     <div>
         <p class="h3 text-center">Participants</p>
