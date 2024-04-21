@@ -17,9 +17,19 @@
     <script src="components.js" defer></script>
     <script src="homeScript.js" defer></script>
 </head>
-    <p class="h1 text-center">Room Selection</p>
+<nav>
+<ul style="list-style-type: none; margin: 0; padding: 0; overflow: hidden; background-color:#452c63;">
+    <li style="float: left;">
+      <a href="https://localhost:3000/" style="display: block; color: white; text-align: center; padding: 14px 16px; text-decoration: none;">Home</a>
+    </li>
+</ul>
+</nav>
+<div style="position: relative; display: flex; justify-content: center; align-items: center; height: 400px; background-color: #f2f2f2;">
+    <img src="https://blog-assets.freshworks.com/live-chat-software/wp-content/uploads/2020/11/03145623/Blog_Banner_v1.jpg" alt="Digital Banner" style="width: 100%; height: 100%; object-fit: cover;opacity: 0.5;">
+    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: black; font-size: 3rem; text-align: center; ">Start chatting now!</span>
+  </div>
     <div class="d-flex justify-content-center">
-        <button id="create-room-button" class="btn btn-outline-primary">Create Room</button>
+        <button id="create-room-button" class="btn btn-outline-primary" style="display: inline; margin-top: 10px;">Create New Chatting Room</button>
     </div>
     <div
     id="room-component-container"
