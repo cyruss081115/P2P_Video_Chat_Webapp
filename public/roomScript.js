@@ -156,6 +156,7 @@ socket.on("file-uploaded", (filename) => {
     `Download ${filename}?`,
     // Define yes callback
     () => {
+      // Request and download file from server
       const xmlHttp = new XMLHttpRequest();
       xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
@@ -206,6 +207,7 @@ const startStopRecordingButton = document.getElementById(
 let mediaRecorderList = [];
 startStopRecordingButton.onclick = () => {
   if (startStopRecordingButton.innerHTML === "Start Recording") {
+    // Send signal to start recording for all videos
     mediaRecorderList.push(signalStartRecording(myVideo.srcObject, `user-${USERNAME}-video`));
     videoGrid.childNodes.forEach((videoComponent) => {
       const video = videoComponent.getElementsByTagName("video")[0];
@@ -214,6 +216,7 @@ startStopRecordingButton.onclick = () => {
     startStopRecordingButton.innerHTML = "Stop Recording";
     startStopRecordingButton.className = "btn btn-danger";
   } else {
+    // Send signal to stop recording for all videos
     mediaRecorderList.forEach((mediaRecorder) =>
       signalStopRecording(mediaRecorder)
     );
@@ -238,6 +241,7 @@ const chatRoomModal = createChatRoomModalComponent(
   chatMessageContainerId,
   // Send message callback
   (message) => {
+    // Send message to server
     const xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = () => {
       if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {

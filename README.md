@@ -1,8 +1,12 @@
 # CSCI3280 Project Phase 2
 
-##Project overview
+## Project overview
 
 In this project, a web-based application is built to create a peer-to-peer (P2P) voice chat room enables voice calling between multiple computers. 
+
+## Gallery
+<img src="assets/homepage.png">
+<img src="assets/chatroom.png">
 
 ## System Features
 
@@ -22,7 +26,8 @@ In this project, a web-based application is built to create a peer-to-peer (P2P)
 - Basic GUI is built for smooth user-experience for user to use the application
 
 ### Multi-user voice chat
-Declaration: The multi-user voice chat is adapted from this tutorial [https://www.youtube.com/watch?v=DvlyzDZDEq4&t=1100s | How To Create A Video Chat App With WebRTC]
+Declaration: The multi-user voice chat is adapted from this tutorial [How To Create A Video Chat App With WebRTC](https://www.youtube.com/watch?v=DvlyzDZDEq4&t=1100s)
+
 
 #### Support for multiple users
 - Muliple users can join the same chat room
@@ -31,7 +36,7 @@ Declaration: The multi-user voice chat is adapted from this tutorial [https://ww
 - Smooth and uninterrupted conversation experience is achieved.
 
 #### Simultaneous voice speaking
-- User can speak concurrently for a natual conversation flow
+- User can speak concurrently for a natural conversation flow
 
 #### Microphone control
 - Mute/ Unmute buttons are set to control the user's microphone
