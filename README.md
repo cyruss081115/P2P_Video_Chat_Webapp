@@ -10,6 +10,7 @@ This project is a web-based application that creates a peer-to-peer (P2P) voice 
 
 ![Homepage](assets/homepage.png)
 ![Chat Room](assets/chatroom.png)
+![Text Chat Room](assets/text_chat_room.png)
 
 ## System Features
 
