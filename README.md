@@ -1,68 +1,67 @@
-# CSCI3280 Project Phase 2
+# Peer-to-Peer Video Chat Web Application
 
-## Project overview
+## Project Overview
 
-In this project, a web-based application is built to create a peer-to-peer (P2P) voice chat room enables voice calling between multiple computers. 
+This project is a web-based application that creates a peer-to-peer (P2P) voice chat room, enabling voice calling between multiple computers.
 
 ## Gallery
-<img src="assets/homepage.png">
-<img src="assets/chatroom.png">
+
+![Homepage](assets/homepage.png)
+![Chat Room](assets/chatroom.png)
 
 ## System Features
 
-### Basic Features 
+### Basic Features
 
-#### Chat room creation
-- The user can create new chat room which allows other user to join in.
+#### Chat Room Creation
+- Users can create new chat rooms that allow others to join.
 
-#### Chat room list 
-- The chat room list is displayed in the application.
-- The user can select and join their interested chatroom
+#### Chat Room List
+- A list of available chat rooms is displayed in the application.
+- Users can select and join a chat room of their interest.
 
-#### Joining the chat room
-- The user can join the chat room to participate in real-time communciation
-
-#### Basic GUI
-- Basic GUI is built for smooth user-experience for user to use the application
-
-### Multi-user voice chat
-Declaration: The multi-user voice chat is adapted from this tutorial [How To Create A Video Chat App With WebRTC](https://www.youtube.com/watch?v=DvlyzDZDEq4&t=1100s)
-
-
-#### Support for multiple users
-- Muliple users can join the same chat room
-
-#### Continuous voice communication
-- Smooth and uninterrupted conversation experience is achieved.
-
-#### Simultaneous voice speaking
-- User can speak concurrently for a natural conversation flow
-
-#### Microphone control
-- Mute/ Unmute buttons are set to control the user's microphone
+#### Joining the Chat Room
+- Users can join chat rooms to participate in real-time communication.
 
 #### Basic GUI
-- Basic GUI is built for smooth user-experience for user to use the application
+- A user-friendly GUI is designed for a smooth user experience.
 
-### Record 
-- All user voice would be captured and it would be accessible because the user can download it 
-#### Start/Stop function
-- Start/ Stop button is built to record
+### Multi-User Voice Chat
 
-### Enhanced feautres
+> **Declaration:** The multi-user voice chat feature is adapted from the tutorial [How To Create A Video Chat App With WebRTC](https://www.youtube.com/watch?v=DvlyzDZDEq4&t=1100s).
 
-#### Real-time video streaming
-- The user stream will include both audio and video 
+#### Support for Multiple Users
+- Multiple users can join the same chat room.
 
-#### Message
-- The user can message other user in the room 
-#### Karaoke system
-- The user can input the file to have the removal of the vocal version
-- The user can play it and sing in front of all users. 
+#### Continuous Voice Communication
+- Provides a smooth and uninterrupted conversation experience.
+
+#### Simultaneous Voice Speaking
+- Users can speak concurrently for a natural conversation flow.
+
+#### Microphone Control
+- Mute/Unmute buttons are available to control the user's microphone.
+
+### Record
+- All user voices are captured and can be downloaded.
+
+#### Start/Stop Function
+- A Start/Stop button is provided for recording.
+
+### Enhanced Features
+
+#### Real-Time Video Streaming
+- The user stream includes both audio and video.
+
+#### Messaging
+- Users can send messages to others in the room.
+
+#### Karaoke System
+- Users can input a file to remove the vocal track and sing along in front of other users.
 
 
 
-#### Usage
+## Usage
 To run this application, execute:
 ```
 $ npm run devStart
@@ -71,17 +70,28 @@ This will start a https server on https://localhost:3000.
 
 Note: If you are using CUHK1x WiFi, you may want to share your mobile network to your computer and launch the server using your mobile network. CUHK1x uses NAT which makes communication difficult in the local network.  
 
-Each time a user visits https://localhost:3000, he/she will be directed to a new and unique chat room. An URL of a chatroom is in the following form: https://host.ip.address:3000/some-unique-chat-room-id. To join a chatroom, simply visits the same URL.  
 
-https://localhost:3000 is the home page of the application, he/she can create new chat room. After new chat room is created, he can choose to delete it. Additionally, he can scroll down the page to join other chatroom. 
+### Accessing the Application
+Each time a user visits https://localhost:3000, they will be directed to a new and unique chat room. The URL format for a chat room is:
 
-When they are clicked to join, they would be directed to https://host.ip.address:3000/some-unique-chat-room-id, a request of the media will be asked. Inside the chatroom, there are serveral buttons for users to control audio, video or send message or input music file to have the removal of vocal verision. They can leave the chatroom by clicking the "home" in the nav bar. 
+```
+https://host.ip.address:3000/some-unique-chat-room-id
+```
+To join a chat room, simply visit the same URL.
+The home page at https://localhost:3000 allows users to create new chat rooms. After creating a new chat room, users can choose to delete it or scroll down to join other chat rooms.
+When users click to join, they will be directed to:
 
+```
+https://host.ip.address:3000/some-unique-chat-room-id
+```
+A media access request will be prompted. Inside the chat room, there are several buttons for users to control audio, video, send messages, or input music files for vocal removal. Users can leave the chat room by clicking "Home" in the navigation bar.
 
-Example:  
-Step 1: Launch the application  
-Step 2: Visits https://localhost:3000/. You are automatically directed to an url that looks like this: https://localhost:3000/3b8e3379-392b-4a74-b178-c2e7be291374.  
-Step 3: To join the same chatroom ***on the same computer*** use the same URL, https://localhost:3000/3b8e3379-392b-4a74-b178-c2e7be291374. To join this chatroom ***on another device***, you need to figure out the IP address of the host computer in this local network. Then, you replace 'localhost' with that IP address. Eventually it becomes something like https://172.20.10.2:3000/3b8e3379-392b-4a74-b178-c2e7be291374  
-Step 4: Allow the browser to access your microphone and camera  
-Step 5: Have fun! 
+### Example Steps
+1. Launch the Application
+2. Visit https://localhost:3000/. You will automatically be directed to a URL like: https://localhost:3000/3b8e3379-392b-4a74-b178-c2e7be291374.
+3. Joining the Same Chat Room:
+  - On the Same Computer: Use the same URL.
+  - On Another Device: Find the host computer's IP address in the local network. Replace localhost with that IP address, resulting in a URL like: https://172.20.10.2:3000/3b8e3379-392b-4a74-b178-c2e7be291374.
+4. Allow Browser Access: Grant permission for the browser to access your microphone and camera.
+5. Have Fun!
 
