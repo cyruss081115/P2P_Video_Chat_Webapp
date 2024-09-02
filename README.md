@@ -1,5 +1,7 @@
 # Peer-to-Peer Video Chat Web Application
 
+> This project is an extension of the final project of CSCI3280 Intro to Multimedia at CUHK
+
 ## Project Overview
 
 This project is a web-based application that creates a peer-to-peer (P2P) voice chat room, enabling voice calling between multiple computers.
