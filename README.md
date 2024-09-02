@@ -74,26 +74,23 @@ Note: If you are using CUHK1x WiFi, you may want to share your mobile network to
 
 
 ### Accessing the Application
-Each time a user visits https://localhost:3000, they will be directed to a new and unique chat room. The URL format for a chat room is:
 
-```
-https://host.ip.address:3000/some-unique-chat-room-id
-```
-To join a chat room, simply visit the same URL.
-The home page at https://localhost:3000 allows users to create new chat rooms. After creating a new chat room, users can choose to delete it or scroll down to join other chat rooms.
-When users click to join, they will be directed to:
+When a user visits `https://localhost:3000`, they will arrive at the homepage. Each chat room is distinguished by a unique room ID. Users can check if the chat room they want to join already exists; if it doesn't, they can create a new chat room by clicking the **Create New Chatting Room** button.
 
-```
-https://host.ip.address:3000/some-unique-chat-room-id
-```
-A media access request will be prompted. Inside the chat room, there are several buttons for users to control audio, video, send messages, or input music files for vocal removal. Users can leave the chat room by clicking "Home" in the navigation bar.
+To join a chat room, simply click the **Join Room** button. The application will prompt the user to enter their username for display. After that, you can start chatting! The homepage at `https://localhost:3000` also allows users to remove chat rooms when needed.
+
+Once in the chat room, a media access request will be prompted. Inside the chat room, several buttons are available for users to control audio, video, send messages, or input music files for vocal removal. Users can leave the chat room by clicking "Home" in the navigation bar.
 
 ### Example Steps
-1. Launch the Application
-2. Visit https://localhost:3000/. You will automatically be directed to a URL like: https://localhost:3000/3b8e3379-392b-4a74-b178-c2e7be291374.
-3. Joining the Same Chat Room:
-  - On the Same Computer: Use the same URL.
-  - On Another Device: Find the host computer's IP address in the local network. Replace localhost with that IP address, resulting in a URL like: https://172.20.10.2:3000/3b8e3379-392b-4a74-b178-c2e7be291374.
-4. Allow Browser Access: Grant permission for the browser to access your microphone and camera.
-5. Have Fun!
+
+1. **Launch the Application**
+2. **Visit** `https://localhost:3000`. You will be directed to the homepage.
+3. **Check for Existing Chat Rooms**:
+   - Look for a chat room with the desired room ID.
+   - If it exists, click the **Join Room** button next to it.
+   - If it doesn't exist, click the **Create New Chatting Room** button.
+4. **Enter Your Username**: When prompted, input your username for display in the chat.
+5. **Allow Browser Access**: Grant permission for the browser to access your microphone and camera.
+6. **Start Chatting**: Once inside the chat room, you can begin chatting and using the available features.
+7. **Leave the Chat Room**: To exit, click "Home" in the navigation bar.
 
